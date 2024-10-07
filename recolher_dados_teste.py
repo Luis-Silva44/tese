@@ -60,5 +60,3 @@ print(two_mass_designation)
 # %% 
 gaia_designation = GAIA_data("Sand 178")
 print(gaia_designation)
-
-# TESTE
