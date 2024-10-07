@@ -4,21 +4,64 @@ import astropy.units as u
 from astroquery.irsa import Irsa
 from astroquery.simbad import Simbad
 import pandas as pd
+from astroquery.gaia import Gaia
 
 # %% 
+def wise_data(star_name):
+    result = Simbad.query_object(star_name)
+    star_data = result.to_pandas()
 
-ra = 318.5315620098465
-dec = +20.7855341949544
+    ra = star_data.RA[0]
+    dec = star_data.DEC[0]
+    coords = SkyCoord(ra=ra, dec=dec, unit=(u.hourangle, u.deg), frame='icrs')
 
-coords = SkyCoord(ra = ra*u.deg, dec = dec * u.deg)
+    print(coords)  
+    result = Irsa.query_region(coords, catalog='allwise_p3as_psd', spatial='Cone', radius = .05*u.arcmin)
+    flux_values = result.to_pandas()
+    return flux_values
 
-result = Irsa.query_region(coords,catalog='fp_psc',spatial='Cone', radius= 5*u.arcmin)
-mass_data = result.to_pandas()
 
-print(mass_data.dec)
+# %% 
+def two_mass_data(star_name):
+    result = Simbad.query_object(star_name)
+    star_data = result.to_pandas()
 
-# %%
-result = Simbad.query_region("ASAS J140748-3945.7")
-star_data = result.to_pandas()
+    ra = star_data.RA[0]
+    dec = star_data.DEC[0]
+    coords = SkyCoord(ra=ra, dec=dec, unit=(u.hourangle, u.deg), frame='icrs')
 
-print(star_data.DEC)
+
+    print(coords)  
+    result = Irsa.query_region(coords, catalog='fp_psc', spatial='Cone', radius = .05*u.arcmin)
+    flux_values = result.to_pandas()
+    return flux_values
+
+
+# %% 
+def GAIA_data(star_name):
+    result = Simbad.query_object(star_name)
+    star_data = result.to_pandas()
+
+    ra = star_data.RA[0]
+    dec = star_data.DEC[0]
+    coords = SkyCoord(ra=ra, dec=dec, unit=(u.hourangle, u.deg), frame='icrs')
+
+    print(coords)  
+    search = Gaia.cone_search_async(coords, radius=u.Quantity(0.05, u.arcmin))
+    result = search.get_results()
+    flux_values = result.to_pandas()
+    return flux_values
+
+
+# %% 
+wise_designation = wise_data("20 LMi")
+print(wise_designation.designation)
+
+# %% 
+two_mass_designation = two_mass_data('20 LMi')
+print(two_mass_designation)
+
+# %% 
+gaia_designation = GAIA_data("Sand 178")
+print(gaia_designation)
+
