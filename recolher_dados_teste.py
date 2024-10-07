@@ -15,7 +15,6 @@ def wise_data(star_name):
     dec = star_data.DEC[0]
     coords = SkyCoord(ra=ra, dec=dec, unit=(u.hourangle, u.deg), frame='icrs')
 
-    print(coords)  
     result = Irsa.query_region(coords, catalog='allwise_p3as_psd', spatial='Cone', radius = .05*u.arcmin)
     flux_values = result.to_pandas()
     return flux_values
@@ -29,9 +28,7 @@ def two_mass_data(star_name):
     ra = star_data.RA[0]
     dec = star_data.DEC[0]
     coords = SkyCoord(ra=ra, dec=dec, unit=(u.hourangle, u.deg), frame='icrs')
-
-
-    print(coords)  
+ 
     result = Irsa.query_region(coords, catalog='fp_psc', spatial='Cone', radius = .05*u.arcmin)
     flux_values = result.to_pandas()
     return flux_values
@@ -46,7 +43,6 @@ def GAIA_data(star_name):
     dec = star_data.DEC[0]
     coords = SkyCoord(ra=ra, dec=dec, unit=(u.hourangle, u.deg), frame='icrs')
 
-    print(coords)  
     search = Gaia.cone_search_async(coords, radius=u.Quantity(0.05, u.arcmin))
     result = search.get_results()
     flux_values = result.to_pandas()
@@ -55,7 +51,7 @@ def GAIA_data(star_name):
 
 # %% 
 wise_designation = wise_data("20 LMi")
-print(wise_designation.designation)
+print(wise_designation)
 
 # %% 
 two_mass_designation = two_mass_data('20 LMi')
@@ -65,3 +61,4 @@ print(two_mass_designation)
 gaia_designation = GAIA_data("Sand 178")
 print(gaia_designation)
 
+# TESTE
