@@ -7,14 +7,17 @@ import pandas as pd
 from astroquery.gaia import Gaia
 
 # %% 
-def wise_data(star_name):
+def Simbad_coords(star_name):
     result = Simbad.query_object(star_name)
     star_data = result.to_pandas()
 
     ra = star_data.RA[0]
     dec = star_data.DEC[0]
     coords = SkyCoord(ra=ra, dec=dec, unit=(u.hourangle, u.deg), frame='icrs')
-
+    return coords
+# %% 
+def wise_data(star_name):
+    coords = Simbad_coords(star_name)
     result = Irsa.query_region(coords, catalog='allwise_p3as_psd', spatial='Cone', radius = .05*u.arcmin)
     flux_values = result.to_pandas()
     return flux_values
@@ -22,13 +25,7 @@ def wise_data(star_name):
 
 # %% 
 def two_mass_data(star_name):
-    result = Simbad.query_object(star_name)
-    star_data = result.to_pandas()
-
-    ra = star_data.RA[0]
-    dec = star_data.DEC[0]
-    coords = SkyCoord(ra=ra, dec=dec, unit=(u.hourangle, u.deg), frame='icrs')
- 
+    coords = Simbad_coords(star_name)
     result = Irsa.query_region(coords, catalog='fp_psc', spatial='Cone', radius = .05*u.arcmin)
     flux_values = result.to_pandas()
     return flux_values
@@ -36,14 +33,8 @@ def two_mass_data(star_name):
 
 # %% 
 def GAIA_data(star_name):
-    result = Simbad.query_object(star_name)
-    star_data = result.to_pandas()
-
-    ra = star_data.RA[0]
-    dec = star_data.DEC[0]
-    coords = SkyCoord(ra=ra, dec=dec, unit=(u.hourangle, u.deg), frame='icrs')
-
-    search = Gaia.cone_search_async(coords, radius=u.Quantity(0.05, u.arcmin))
+    coords = Simbad_coords(star_name)
+    search = Gaia.cone_search_async(coords, radius=u.Quantity(0.7, u.arcmin))
     result = search.get_results()
     flux_values = result.to_pandas()
     return flux_values
@@ -58,5 +49,5 @@ two_mass_designation = two_mass_data('20 LMi')
 print(two_mass_designation)
 
 # %% 
-gaia_designation = GAIA_data("Sand 178")
+gaia_designation = GAIA_data("20 LMi")
 print(gaia_designation)
