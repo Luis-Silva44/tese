@@ -18,7 +18,7 @@ def Simbad_coords(star_name):
 # %% 
 def wise_data(star_name):
     coords = Simbad_coords(star_name)
-    result = Irsa.query_region(coords, catalog='allwise_p3as_psd', spatial='Cone', radius = .05*u.arcmin)
+    result = Irsa.query_region(coords, catalog='allwise_p3as_psd', spatial='Cone', radius = .3*u.arcmin)
     flux_values = result.to_pandas()
     return flux_values
 
@@ -42,12 +42,17 @@ def GAIA_data(star_name):
 
 # %% 
 wise_designation = wise_data("20 LMi")
-print(wise_designation)
+w1_mag = wise_designation.w1mpro[0]
+w2_mag = wise_designation.w2mpro[0]
+w3_mag = wise_designation.w3mpro[0]
 
 # %% 
 two_mass_designation = two_mass_data('20 LMi')
-print(two_mass_designation)
+j_mag = two_mass_designation.j_m[0]
+h_mag = two_mass_designation.h_m[0]
+k_mag = two_mass_designation.k_m[0]
 
+print(j_mag)
 # %% 
 gaia_designation = GAIA_data("20 LMi")
-print(gaia_designation)
+
