@@ -90,12 +90,23 @@ def flux_inital_estimation(star_name):
     flux_values = np.array([G_flux, B_flux, R_flux,J_flux, H_flux, K_flux, W1_flux, W2_flux])
     wavelen_values =  np.array([0.673,0.532,0.797,1.25,1.65,2.15,3.4,4.6]) #in micrometers
     return flux_values, wavelen_values
-# %% 
-flux_values, wavelen_values = flux_inital_estimation('Cl* NGC 2632 HSHJ 430')
-print(flux_values)
-plt.plot(wavelen_values, flux_values,'o')
+
 #%% 
-flux_values, wavelen_values = flux_inital_estimation('HD 197481')
+flux_values, wavelen_values = flux_inital_estimation('Vega')
 print(flux_values)
 plt.plot(wavelen_values, flux_values,'o')
-plt.yscale('log')
+
+# %% 
+from astropy.io import fits
+
+hdul = fits.open('/mnt/c/Users/Luis Silva/Desktop/cenas de faculdade/Mestrado/Tese/ckp00_3500.fits')
+hdul.info()
+header = hdul[0].header
+#print(repr(header))
+data = hdul[1].data
+
+# %% 
+import pysynphot as ps
+import os
+os.environ['PYSYN_CDBS'] = '/mnt/c/wsl.localhost/Ubuntu/home/eu/.local/lib/python3.10/site-packages/pysynphot/grid'
+sp = ps.Icat('ckp00models', 10000, 0.1, 3.0)
