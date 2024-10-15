@@ -7,7 +7,6 @@ import pandas as pd
 from astroquery.gaia import Gaia
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy
 
 # %% 
 def Simbad_coords(star_name):
@@ -92,7 +91,7 @@ def flux_inital_estimation(star_name):
     return flux_values, wavelen_values
 
 #%% 
-flux_values, wavelen_values = flux_inital_estimation('Vega')
+flux_values, wavelen_values = flux_inital_estimation('Arcturus')
 print(flux_values)
 plt.plot(wavelen_values, flux_values,'o')
 
@@ -105,8 +104,12 @@ header = hdul[0].header
 #print(repr(header))
 data = hdul[1].data
 
-# %% 
-import pysynphot as ps
+#%% 
+import pysynphot as S
 import os
-os.environ['PYSYN_CDBS'] = '/mnt/c/wsl.localhost/Ubuntu/home/eu/.local/lib/python3.10/site-packages/pysynphot/grid'
-sp = ps.Icat('ckp00models', 10000, 0.1, 3.0)
+
+os.environ['PYSYN_CDBS']
+
+# %% # Load a specific Castelli-Kurucz model for given parameters
+model = S.Icat('ck04models', 8000, 0.5, 2.0)
+plt.plot(model.wave, model.flux)
