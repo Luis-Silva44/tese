@@ -7,6 +7,8 @@ import pandas as pd
 from astroquery.gaia import Gaia
 import numpy as np
 import matplotlib.pyplot as plt
+import pysynphot as S
+import os
 
 # %% 
 def Simbad_coords(star_name):
@@ -21,16 +23,16 @@ def Simbad_coords(star_name):
 def wise_data(star_name):
     coords = Simbad_coords(star_name)
     result = Irsa.query_region(coords, catalog='allwise_p3as_psd', spatial='Cone', radius = 1*u.arcmin)
-    flux_values = result.to_pandas()
-    return flux_values
+    star_data = result.to_pandas()
+    return star_data
 
 
 # %% 
 def two_mass_data(star_name):
     coords = Simbad_coords(star_name)
     result = Irsa.query_region(coords, catalog='fp_psc', spatial='Cone', radius = 1*u.arcmin)
-    flux_values = result.to_pandas()
-    return flux_values
+    star_data = result.to_pandas()
+    return star_data
 
 
 # %% 
@@ -38,8 +40,8 @@ def GAIA_data(star_name):
     coords = Simbad_coords(star_name)
     search = Gaia.cone_search_async(coords, radius=u.Quantity(1, u.arcmin))
     result = search.get_results()
-    flux_values = result.to_pandas()
-    return flux_values
+    star_data = result.to_pandas()
+    return star_data
 
 # %% 
 def flux_from_mag(mag, band): # in W / m^2 / micrometers
@@ -103,12 +105,6 @@ hdul.info()
 header = hdul[0].header
 #print(repr(header))
 data = hdul[1].data
-
-#%% 
-import pysynphot as S
-import os
-
-os.environ['PYSYN_CDBS']
 
 # %% # Load a specific Castelli-Kurucz model for given parameters
 model = S.Icat('ck04models', 8000, 0.5, 2.0)
