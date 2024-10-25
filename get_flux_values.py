@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pysynphot as S
 import os
+
+#STILL NEEDED: CORRECT ERRORS; REMOVE WARNING FROM COORDINATES
 # %% 
 
 def vizier_coords(gaia_id):
@@ -24,7 +26,6 @@ def vizier_coords(gaia_id):
 def wise_values(gaia_id):
     wise_catalog = 'II/311/wise'
     ra, dec = vizier_coords(gaia_id)
-
     wise_values = Vizier.query_region(f"{ra} {dec}", radius=10* u.arcsec , catalog=wise_catalog)
     if wise_values:
         return wise_values
@@ -89,12 +90,18 @@ def get_flux_values(gaia_id):
 
     flux_values = np.array([G_flux,GBP_flux,GRP_flux, W1_flux,W2_flux,J_flux,H_flux,K_flux])
     flux_err = np.array([G_flux_err,GBP_flux_err,GRP_flux_err,W1_flux_err,W2_flux_err,J_flux_err,H_flux_err,K_flux_err])
-    wavelen = np.array([0.673, 0.532, 0.797,3.4,4.6,1.25,1.65,2.15]) # in micrometers
+    
+    
+    filter_bands = {'G': 0.673,'GBP':0.532, 'GRP':0.797, 
+                        'W1':3.4, 'W2':4.6, 
+                        'J':1.25, 'H':1.65, 'K':2.15,}
 
-    return wavelen, flux_values, flux_err
+    filter_wavelen = np.array([d for d in filter_bands.values()])
+
+    return filter_wavelen, flux_values, flux_err
 
 # %% 
-wavelen, flux_values, flux_error = get_flux_values('933054951834436352')
+wavelen, flux_values, flux_error = get_flux_values('2135550755683407232')
 
 plt.plot(wavelen, flux_values,'o')
 plt.xlabel('Wavelenght (μm)')
@@ -103,16 +110,3 @@ plt.title('Flux values of the star for each filter')
 
 print(flux_values)
 print(flux_error)
-
-# %% 
-def star_values(gaia_id):
-    gaia_catalog = "I/355/gaiadr3"  # Gaia DR3 catalog
-    gaia_values = Vizier.query_constraints(catalog=gaia_catalog, Source=gaia_id)
-
-    Teff = float(gaia_values[0]['Teff'])
-    log_g = float(gaia_values[0]['logg'])
-    metalicity = float(gaia_values[0]['__Fe_H_'])
-
-    return Teff, log_g, metalicity
-
-star_values('5707485527450614656')
