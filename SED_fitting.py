@@ -1,6 +1,9 @@
 # %%
 from get_flux_values import get_flux_values
 from scipy.interpolate import LinearNDInterpolator
+import pysynphot as S
+import numpy as np
+import matplotlib.pyplot as plt
 
 # %% 
 first_temp_steps = list(range(3000,13001,250))
@@ -60,22 +63,36 @@ def SED_interpolator(Teff,mettalicity,logg):
 
     interpolated_fluxes = np.array(interpolated_fluxes)
 
-    wavelen = wavelen * 10e-4
-    interpolated_fluxes = interpolated_fluxes * 10e-10 
+    wavelen = wavelen * 1e-4
+    interpolated_fluxes = interpolated_fluxes * 1e-10 
 
     return wavelen, interpolated_fluxes
 
 # %% 
-wavelen, interpolated_fluxes = SED_interpolator(5785,0.09,4.37)
-plt.plot(wavelen, interpolated_fluxes)
 
-x1,x2,y1,y2 = plt.axis()
-plt.axis((0,50,y1,y2))
-plt.show()
+def SED_plot(gaia_id, Teff, mettalicity, log_g):
+    wavelen, interpolated_fluxes = SED_interpolator(Teff,mettalicity,log_g)
+    plt.plot(wavelen, interpolated_fluxes)
+    plt.xlim(0,5)
+    plt.xlabel('Wavelength (μm)')
+    plt.ylabel('Flux (W / cm-2 μm-1)')
+    plt.grid()
+    plt.title('SED of stellar model')
+    plt.show()
 
-wavelen2, flux_values2, flux_error = get_flux_values('2135550755683407232')
-plt.plot(wavelen2, flux_values2, 'o')
-plt.show()
+    wavelen2, flux_values2, _ = get_flux_values(gaia_id)
+    plt.plot(wavelen2, flux_values2, 'o')
+    plt.xlim(0,5)
+    plt.xlabel('Wavelength (μm)')
+    plt.ylabel('Flux (W / cm-2 μm-1)')
+    plt.grid()
+    plt.title('SED observed')
+    plt.show()
 
+# %% 
+gaia_id = '2135550755683407232'
+Teff = 5785
+mettalicity = 0.09
+log_g = 4.37
 
-
+# SED_plot(gaia_id, Teff, mettalicity, log_g)
