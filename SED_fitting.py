@@ -1,16 +1,81 @@
 # %%
 from get_flux_values import get_flux_values
+from scipy.interpolate import LinearNDInterpolator
 
-#%%
 # %% 
-def star_values(gaia_id):
-    gaia_catalog = "I/355/gaiadr3"  # Gaia DR3 catalog
-    gaia_values = Vizier.query_constraints(catalog=gaia_catalog, Source=gaia_id)
+first_temp_steps = list(range(3000,13001,250))
+second_temp_steps = list(range(13000, 50001, 1000)) 
+Teff_grid = first_temp_steps + second_temp_steps
+logg_grid = [0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0]
+mettalicity_grid = [-2.5,-2.0,-1.5,-1.0,-0.5,0.0,0.5]
 
-    Teff = float(gaia_values[0]['Teff'])
-    log_g = float(gaia_values[0]['logg'])
-    metalicity = float(gaia_values[0]['__Fe_H_'])
+def create_SEDs(Teff_vals, mettalicity_vals, logg_vals):
+    SED_data = []
 
-    return Teff, log_g, metalicity
+    for teff in Teff_vals:
+        for mett in mettalicity_vals:
+            for logg in logg_vals:
+                try:
+                    sed_values = S.Icat('ck04models',teff,mett,logg)
+                    SED_data.append(((teff,mett,logg),sed_values))
+                except Exception as e:
+                    print(f"Error getting SED values for Teff={teff}, log_g={logg} and mettalicity={mett}")
 
-star_values('5707485527450614656')
+    return SED_data
+
+def SED_high_and_low(Teff,mettalicity,logg):
+    Teff_low = max([t for t in Teff_grid if t <= Teff])
+    Teff_high = min([t for t in Teff_grid if t > Teff])
+    mettalicity_low = max([m for m in mettalicity_grid if m <= mettalicity])
+    mettalicity_high = min([m for m in mettalicity_grid if m > mettalicity])
+    logg_low = max([l for l in logg_grid if l <= logg])
+    logg_high = min([l for l in logg_grid if l > logg])
+
+    Teff_values = [Teff_low, Teff_high]
+    mettalicity_values =  [mettalicity_low, mettalicity_high]
+    logg_values = [logg_low, logg_high]
+
+    SED_data = create_SEDs(Teff_values,mettalicity_values,logg_values)
+
+    return SED_data
+
+def SED_interpolator(Teff,mettalicity,logg):
+    SED_data = SED_high_and_low(Teff,mettalicity,logg)
+    wavelen = SED_data[0][1].wave
+    fluxes = []
+    points = []
+
+    for (parameters,SED_values) in SED_data: 
+        fluxes.append(SED_values.flux)
+        points.append(parameters)
+    
+    fluxes = np.array(fluxes)
+    points = np.array(points)
+    
+    interpolated_fluxes = []
+
+    for i in range(len(wavelen)):
+        flux_interpolator = LinearNDInterpolator(points, fluxes[:,i])
+        interpolated_fluxes.append(flux_interpolator(Teff,mettalicity,logg))
+
+    interpolated_fluxes = np.array(interpolated_fluxes)
+
+    wavelen = wavelen * 10e-4
+    interpolated_fluxes = interpolated_fluxes * 10e-10 
+
+    return wavelen, interpolated_fluxes
+
+# %% 
+wavelen, interpolated_fluxes = SED_interpolator(5785,0.09,4.37)
+plt.plot(wavelen, interpolated_fluxes)
+
+x1,x2,y1,y2 = plt.axis()
+plt.axis((0,50,y1,y2))
+plt.show()
+
+wavelen2, flux_values2, flux_error = get_flux_values('2135550755683407232')
+plt.plot(wavelen2, flux_values2, 'o')
+plt.show()
+
+
+
