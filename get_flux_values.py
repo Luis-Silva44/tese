@@ -7,7 +7,9 @@ import matplotlib.pyplot as plt
 import pysynphot as S
 import os
 
-#STILL NEEDED: CORRECT ERRORS; REMOVE WARNING FROM COORDINATES
+from unit_change import * 
+
+#STILL NEEDED: CORRECT UNCERTAINTIES; REMOVE WARNING FROM COORDINATES
 # %% 
 
 def vizier_coords(gaia_id):
@@ -64,11 +66,19 @@ def mag_to_flux(mag,band): # in W cm-2 micrometer-1
 
 #%%
 def get_flux_values(gaia_id):
+
+    filter_bands = {'G': 0.673,'GBP':0.532, 'GRP':0.797, 
+                    'W1':3.4, 'W2':4.6, 
+                    'J':1.25, 'H':1.65, 'K':2.15,}
+
+    filter_wavelen = np.array([d for d in filter_bands.values()]) * u.um
+
     wise_data = wise_values(gaia_id)
     two_mass_data = two_mass_values(gaia_id)
     gaia_data = gaia_values(gaia_id)
     W1_mag, W1_mag_err = float(wise_data[0]['W1mag']), float(wise_data[0]['e_W1mag'])
     W2_mag, W2_mag_err = float(wise_data[0]['W2mag']), float(wise_data[0]['e_W2mag'])
+
 
     J_mag, J_mag_err = float(two_mass_data[0]['Jmag']), float(two_mass_data[0]['e_Jmag'])
     H_mag, H_mag_err = float(two_mass_data[0]['Hmag']), float(two_mass_data[0]['e_Hmag'])
@@ -88,25 +98,20 @@ def get_flux_values(gaia_id):
     GBP_flux, GBP_flux_err = GBP_flux * 3.009167E-22, GBP_flux_err * 3.009167E-22
     GRP_flux, GRP_flux_err = GRP_flux * 1.638483E-22, GRP_flux_err * 1.638483E-22
 
-    flux_values = np.array([G_flux,GBP_flux,GRP_flux, W1_flux,W2_flux,J_flux,H_flux,K_flux])
-    flux_err = np.array([G_flux_err,GBP_flux_err,GRP_flux_err,W1_flux_err,W2_flux_err,J_flux_err,H_flux_err,K_flux_err])
-    
-    
-    filter_bands = {'G': 0.673,'GBP':0.532, 'GRP':0.797, 
-                        'W1':3.4, 'W2':4.6, 
-                        'J':1.25, 'H':1.65, 'K':2.15,}
+    flux_values = np.array([G_flux,GBP_flux,GRP_flux, W1_flux,W2_flux,J_flux,H_flux,K_flux]) * u.watt / u.um / u.cm**2
+    flux_values_Jy = flux_values.to(u.Jy, equivalencies=u.spectral_density(filter_wavelen))
 
-    filter_wavelen = np.array([d for d in filter_bands.values()])
+    #flux_err = np.array([G_flux_err,GBP_flux_err,GRP_flux_err,W1_flux_err,W2_flux_err,J_flux_err,H_flux_err,K_flux_err])
 
-    return filter_wavelen, flux_values, flux_err
+    return filter_wavelen, flux_values_Jy
 
 # %% 
-wavelen, flux_values, flux_error = get_flux_values('2135550755683407232')
+wavelen, flux_values= get_flux_values('2135550755683407232')
+flux_cgs = flux_unit_change(flux_values, 'cgs')
+flux_Jy = flux_values
+flux_SI = flux_unit_change(flux_values, 'SI')
 
-plt.plot(wavelen, flux_values,'o')
+plt.plot(wavelen, flux_SI,'o')
 plt.xlabel('Wavelenght (μm)')
 plt.ylabel('Flux (W / cm-2 μm-1)')
 plt.title('Flux values of the star for each filter')
-
-print(flux_values)
-print(flux_error)
