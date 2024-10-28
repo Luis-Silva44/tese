@@ -18,11 +18,11 @@ def create_SEDs(Teff_vals, mettalicity_vals, logg_vals):
     for teff in Teff_vals:
         for mett in mettalicity_vals:
             for logg in logg_vals:
-                try:
-                    sed_values = S.Icat('ck04models',teff,mett,logg)
-                    SED_data.append(((teff,mett,logg),sed_values))
-                except Exception as e:
-                    print(f"Error getting SED values for Teff={teff}, log_g={logg} and mettalicity={mett}")
+                #try:
+                sed_values = S.Icat('ck04models',teff,mett,logg)
+                SED_data.append(((teff,mett,logg),sed_values))
+                #except Exception as e:
+                #    print(f"Error getting SED values for Teff={teff}, log_g={logg} and mettalicity={mett}")
 
     return SED_data
 
@@ -90,9 +90,9 @@ def SED_plot(gaia_id, Teff, mettalicity, log_g):
     plt.show()
 
 # %% 
-gaia_id = '2135550755683407232'
-Teff = 5785
-mettalicity = 0.09
-log_g = 4.37
+#gaia_id = '2135550755683407232'
+#Teff = 5785
+#mettalicity = 0.09
+#log_g = 4.37
 
 # SED_plot(gaia_id, Teff, mettalicity, log_g)
