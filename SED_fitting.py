@@ -4,13 +4,14 @@ from scipy.interpolate import LinearNDInterpolator
 import pysynphot as S
 import numpy as np
 import matplotlib.pyplot as plt
+import astropy.units as u
 
 # %% 
 first_temp_steps = list(range(3000,13001,250))
 second_temp_steps = list(range(13000, 50001, 1000)) 
-Teff_grid = first_temp_steps + second_temp_steps
-logg_grid = [0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0]
-mettalicity_grid = [-2.5,-2.0,-1.5,-1.0,-0.5,0.0,0.5]
+Teff_grid = (first_temp_steps + second_temp_steps) 
+logg_grid = [0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0] 
+mettalicity_grid = [-2.5,-2.0,-1.5,-1.0,-0.5,0.0,0.5] 
 
 def create_SEDs(Teff_vals, mettalicity_vals, logg_vals):
     SED_data = []
@@ -18,11 +19,11 @@ def create_SEDs(Teff_vals, mettalicity_vals, logg_vals):
     for teff in Teff_vals:
         for mett in mettalicity_vals:
             for logg in logg_vals:
-                #try:
-                sed_values = S.Icat('ck04models',teff,mett,logg)
-                SED_data.append(((teff,mett,logg),sed_values))
-                #except Exception as e:
-                #    print(f"Error getting SED values for Teff={teff}, log_g={logg} and mettalicity={mett}")
+                try:
+                    sed_values = S.Icat('ck04models',teff,mett,logg)
+                    SED_data.append(((teff,mett,logg),sed_values))
+                except Exception as e:
+                    print(f"Error getting SED values for Teff={teff}, log_g={logg} and mettalicity={mett}")
 
     return SED_data
 
@@ -44,7 +45,7 @@ def SED_high_and_low(Teff,mettalicity,logg):
 
 def SED_interpolator(Teff,mettalicity,logg):
     SED_data = SED_high_and_low(Teff,mettalicity,logg)
-    wavelen = SED_data[0][1].wave
+    wavelen = SED_data[0][1].wave * u.angstrom
     fluxes = []
     points = []
 
@@ -61,13 +62,12 @@ def SED_interpolator(Teff,mettalicity,logg):
         flux_interpolator = LinearNDInterpolator(points, fluxes[:,i])
         interpolated_fluxes.append(flux_interpolator(Teff,mettalicity,logg))
 
-    interpolated_fluxes = np.array(interpolated_fluxes)
+    interpolated_fluxes = np.array(interpolated_fluxes) * u.erg / u.cm**2 / u.s / u.angstrom
 
-    wavelen = wavelen * 1e-4
-    interpolated_fluxes = interpolated_fluxes * 1e-10 
+    wavelen = wavelen.to(u.um)
+    interpolated_flux = interpolated_fluxes.to(u.Jy, u.spectral_density(wavelen))
 
-    return wavelen, interpolated_fluxes
-
+    return wavelen, interpolated_flux
 # %% 
 
 def SED_plot(gaia_id, Teff, mettalicity, log_g):
@@ -80,7 +80,7 @@ def SED_plot(gaia_id, Teff, mettalicity, log_g):
     plt.title('SED of stellar model')
     plt.show()
 
-    wavelen2, flux_values2, _ = get_flux_values(gaia_id)
+    wavelen2, flux_values2 = get_flux_values(gaia_id)
     plt.plot(wavelen2, flux_values2, 'o')
     plt.xlim(0,5)
     plt.xlabel('Wavelength (μm)')
@@ -95,4 +95,4 @@ def SED_plot(gaia_id, Teff, mettalicity, log_g):
 #mettalicity = 0.09
 #log_g = 4.37
 
-# SED_plot(gaia_id, Teff, mettalicity, log_g)
+#SED_plot(gaia_id, Teff, mettalicity, log_g)
