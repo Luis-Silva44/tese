@@ -3,55 +3,66 @@ from get_flux_values import *
 from SED_fitting import * 
 import pandas as pd
 
+
 # %% 
 def find_nearest_index(array, value):
         index = (np.abs(array - value)).argmin()
         return index
 
 def get_angular_diameter(gaia_id, Teff, mettalicity, log_g):
-    wavelen, observed_flux_values = get_flux_values(gaia_id)
-    SED_wavelen, SED_fluxes = SED_interpolator(Teff, mettalicity, log_g)
+    wavelen, obs_flux_values_Jy = get_flux_values(gaia_id)
+    SED_wavelen, SED_fluxes_Jy = SED_interpolator(Teff, mettalicity, log_g)
 
     nearest_index = []
     for i in range(len(wavelen)):
-        nearest_index.append(find_nearest_index(SED_wavelen, wavelen [i]))
+        nearest_index.append(find_nearest_index(SED_wavelen, wavelen[i]))
 
-    model_flux_values = np.array([SED_fluxes[i].value for i in nearest_index])
+    model_flux_values_Jy = np.array([SED_fluxes_Jy[i].value for i in nearest_index]) * u.Jy
     
-    angular_diameter = 2 * np.sqrt(observed_flux_values / model_flux_values)
-    return wavelen, observed_flux_values, model_flux_values, angular_diameter
+    angular_diameter = 2 * np.sqrt(obs_flux_values_Jy / model_flux_values_Jy) * u.rad
+    angular_diameter_arcsec = angular_diameter.to(u.arcsec)
+
+    return wavelen, obs_flux_values_Jy, model_flux_values_Jy, angular_diameter_arcsec
 
 # %% 
-def create_dataframe(gaia_id, Teff, mettalicity, log_g):
-    wavelen, observed_flux_values, model_flux_values, angular_diameter = get_angular_diameter(gaia_id, Teff, mettalicity, log_g)
+def create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, unit):
+    wavelen, obs_flux_values_Jy, model_flux_values_Jy, ang_diam = get_angular_diameter(gaia_id, Teff, mettalicity, log_g)
+    parallax = parallax.to(u.arcsec)
+    distance =  1 / parallax * u.parsec
 
-    flux_units_cgs = u.erg / u.cm**2 / u.s / u.Hz
-    flux_units_watt = u.watt / u.m**2 / u.Hz
+    obs_flux_values = flux_unit_change(obs_flux_values_Jy, unit)
+    model_flux_values = flux_unit_change(model_flux_values_Jy, unit)
+    stellar_radius = distance * ang_diam / 2
+    R_Sun = 6.957e8 * u.m
+    stellar_radius = stellar_radius.to(R_Sun)
 
+    flux_table = pd.DataFrame({
+    'Filter Wavelength': wavelen,
+    'Observed flux': obs_flux_values,
+    'Surface flux (model)': model_flux_values,
+    'Angular Diameter': ang_diam,
+    'Stellar radius':stellar_radius})
+
+    column_units = {'Filter Wavelength': wavelen.unit,
+                    'Observed flux': obs_flux_values.unit,
+                    'Surface flux (model)': model_flux_values.unit,
+                    'Angular Diameter': ang_diam.unit,
+                    'Stellar radius':stellar_radius.unit}
     
-    observed_flux_values_cgs = observed_flux_values.to(flux_units_cgs)
-    observed_flux_values_watt = observed_flux_values.to(flux_units_watt)
+    flux_table.rename(columns={col: f"{col} ({unit})" for col, unit in column_units.items()}, inplace=True)
 
-    print(observed_flux_values_cgs)
-    print(observed_flux_values_watt)
-
-    flux_table = pd.DataFrame(observed_flux_values, columns=['Flux Observed'])
-    flux_table.insert(1, 'Surface flux (model)', model_flux_values)
-    flux_table.insert(2, 'Angular Diameter', angular_diameter.value)
-    flux_table.insert(0, 'Filter wavelength', wavelen.value)
-    flux_table['Angular Diameter'] = flux_table['Angular Diameter'].apply(lambda x: f"{x:.4e}")
-    flux_table['Surface flux (model)'] = flux_table['Surface flux (model)'].apply(lambda x: f"{x:.4e}")
     print(flux_table)
-
-    mean_angular_diameter = np.mean(angular_diameter)
-    print(mean_angular_diameter)
-
+    print('---')
+    mean_stellar_radius = np.mean(stellar_radius)
+    print(mean_stellar_radius)
+    
 # %% 
 
-gaia_id = '1019003226022657920'
-Teff = 5543
-mettalicity = 0.31
-log_g = 4.38
+gaia_id = '1609157502297291008'
+Teff = 5873
+mettalicity = 0.22
+log_g = 4.200
+parallax = 16.63 * u.arcmin
 
-SED_plot(gaia_id, Teff, mettalicity, log_g)
-create_dataframe(gaia_id, Teff, mettalicity, log_g)
+#SED_plot(gaia_id, Teff, mettalicity, log_g,'cgs')
+create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, 'SI')
