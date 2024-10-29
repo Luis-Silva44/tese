@@ -1,5 +1,5 @@
 # %%
-from get_flux_values import get_flux_values
+from get_flux_values import *
 from scipy.interpolate import LinearNDInterpolator
 import pysynphot as S
 import numpy as np
@@ -45,11 +45,12 @@ def SED_high_and_low(Teff,mettalicity,logg):
 
 def SED_interpolator(Teff,mettalicity,logg):
     SED_data = SED_high_and_low(Teff,mettalicity,logg)
-    wavelen = SED_data[0][1].wave * u.angstrom
+    SED_wavelen = SED_data[0][1].wave * u.angstrom
+
     fluxes = []
     points = []
 
-    for (parameters,SED_values) in SED_data: 
+    for (parameters, SED_values) in SED_data: 
         fluxes.append(SED_values.flux)
         points.append(parameters)
     
@@ -58,41 +59,45 @@ def SED_interpolator(Teff,mettalicity,logg):
     
     interpolated_fluxes = []
 
-    for i in range(len(wavelen)):
+    for i in range(len(SED_wavelen)):
         flux_interpolator = LinearNDInterpolator(points, fluxes[:,i])
         interpolated_fluxes.append(flux_interpolator(Teff,mettalicity,logg))
 
     interpolated_fluxes = np.array(interpolated_fluxes) * u.erg / u.cm**2 / u.s / u.angstrom
 
-    wavelen = wavelen.to(u.um)
-    interpolated_flux = interpolated_fluxes.to(u.Jy, u.spectral_density(wavelen))
+    SED_wavelen = SED_wavelen.to(u.um)
+    model_flux_Jy = interpolated_fluxes.to(u.Jy, u.spectral_density(SED_wavelen))
 
-    return wavelen, interpolated_flux
+    return SED_wavelen, model_flux_Jy
 # %% 
 
-def SED_plot(gaia_id, Teff, mettalicity, log_g):
-    wavelen, interpolated_fluxes = SED_interpolator(Teff,mettalicity,log_g)
-    plt.plot(wavelen, interpolated_fluxes)
+def SED_plot(gaia_id, Teff, mettalicity, log_g, unit):
+    SED_wavelen, model_flux_Jy= SED_interpolator(Teff,mettalicity,log_g)
+    model_flux = flux_unit_change(model_flux_Jy, unit)
+
+    plt.plot(SED_wavelen, model_flux)
     plt.xlim(0,5)
     plt.xlabel('Wavelength (μm)')
-    plt.ylabel('Flux (W / cm-2 μm-1)')
+    plt.ylabel('Flux (unit)')
     plt.grid()
     plt.title('SED of stellar model')
     plt.show()
 
-    wavelen2, flux_values2 = get_flux_values(gaia_id)
-    plt.plot(wavelen2, flux_values2, 'o')
+    band_wavelen, flux_values_Jy = get_flux_values(gaia_id)
+    flux_values = flux_unit_change(flux_values_Jy, unit)
+
+    plt.plot(band_wavelen, flux_values, 'o')
     plt.xlim(0,5)
     plt.xlabel('Wavelength (μm)')
-    plt.ylabel('Flux (W / cm-2 μm-1)')
+    plt.ylabel('Flux (unit)')
     plt.grid()
     plt.title('SED observed')
     plt.show()
 
 # %% 
-#gaia_id = '2135550755683407232'
-#Teff = 5785
-#mettalicity = 0.09
-#log_g = 4.37
+gaia_id = '2135550755683407232'
+Teff = 5785
+mettalicity = 0.09
+log_g = 4.37
 
-#SED_plot(gaia_id, Teff, mettalicity, log_g)
+#SED_plot(gaia_id, Teff, mettalicity, log_g,'SI')
