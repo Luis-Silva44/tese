@@ -1,17 +1,31 @@
 #%% 
 import astropy.units as u
 from astroquery.vizier import Vizier
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import pysynphot as S
-import os
-
-from unit_change import * 
+ 
 
 #STILL NEEDED: CORRECT UNCERTAINTIES; REMOVE WARNING FROM COORDINATES
 # %% 
 
+def flux_unit_change(value,unit):
+    if unit == 'Jy':
+        return value.to(u.Jy)
+    
+    elif unit == 'cgs':
+        cgs_flux_units =  u.erg / u.cm**2 / u.s / u.Hz
+        return value.to(cgs_flux_units)
+    
+    elif unit == 'SI':
+        SI_flux_units = u.watt / u.m**2 / u.Hz
+        return value.to(SI_flux_units)
+    
+    else:
+        raise ValueError('Unit not recognized by programm')
+    
+
+
+
+# %% 
 def vizier_coords(gaia_id):
     Vizier.ROW_LIMIT = 1  
     gaia_catalog = "I/355/gaiadr3"  # Gaia DR3 catalog
@@ -76,42 +90,43 @@ def get_flux_values(gaia_id):
     wise_data = wise_values(gaia_id)
     two_mass_data = two_mass_values(gaia_id)
     gaia_data = gaia_values(gaia_id)
-    W1_mag, W1_mag_err = float(wise_data[0]['W1mag']), float(wise_data[0]['e_W1mag'])
-    W2_mag, W2_mag_err = float(wise_data[0]['W2mag']), float(wise_data[0]['e_W2mag'])
 
+    W1_mag = float(wise_data[0]['W1mag'])
+    W2_mag = float(wise_data[0]['W2mag'])
+    J_mag = float(two_mass_data[0]['Jmag'])
+    H_mag = float(two_mass_data[0]['Hmag'])
+    K_mag = float(two_mass_data[0]['Kmag'])
 
-    J_mag, J_mag_err = float(two_mass_data[0]['Jmag']), float(two_mass_data[0]['e_Jmag'])
-    H_mag, H_mag_err = float(two_mass_data[0]['Hmag']), float(two_mass_data[0]['e_Hmag'])
-    K_mag, K_mag_err = float(two_mass_data[0]['Kmag']), float(two_mass_data[0]['e_Kmag'])
+    W1_flux = mag_to_flux(W1_mag,'W1')
+    W2_flux= mag_to_flux(W2_mag,'W2')
+    J_flux = mag_to_flux(J_mag,'J')
+    H_flux = mag_to_flux(H_mag,'H')
+    K_flux = mag_to_flux(K_mag,'K')
 
-    W1_flux, W1_flux_err = mag_to_flux(W1_mag,'W1'), mag_to_flux(W1_mag_err,'W1')
-    W2_flux, W2_flux_err = mag_to_flux(W2_mag,'W2'), mag_to_flux(W2_mag_err,'W2')
-    J_flux, J_flux_err = mag_to_flux(J_mag,'J'), mag_to_flux(J_mag_err,'J')
-    H_flux, H_flux_err = mag_to_flux(H_mag,'H'), mag_to_flux(H_mag_err,'H')
-    K_flux, K_flux_err = mag_to_flux(K_mag,'K'), mag_to_flux(K_mag_err,'K')
+    G_flux = float(gaia_data[0]['FG'])
+    GBP_flux = float(gaia_data[0]['FBP'])
+    GRP_flux = float(gaia_data[0]['FRP'])
+    
+    G_flux = G_flux * 1.346109e-21 * u.watt / u.m**2 / u.nm
+    GBP_flux = GBP_flux * 3.009167E-21 * u.watt / u.m**2 / u.nm
+    GRP_flux = GRP_flux * 1.638483E-21 * u.watt / u.m**2 / u.nm
 
-    G_flux, G_flux_err = float(gaia_data[0]['FG']), float(gaia_data[0]['e_FG'])
-    GBP_flux, GBP_flux_err = float(gaia_data[0]['FBP']), float(gaia_data[0]['e_FBP'])
-    GRP_flux, GRP_flux_err = float(gaia_data[0]['FRP']), float(gaia_data[0]['e_FRP'])
+    G_flux = G_flux.to(u.watt / u.um / u.cm**2)
+    GBP_flux = GBP_flux.to(u.watt / u.um / u.cm**2)
+    GRP_flux = GRP_flux.to(u.watt / u.um / u.cm**2)
 
-    G_flux, G_flux_err = G_flux * 1.346109e-22, G_flux_err * 1.346109e-22
-    GBP_flux, GBP_flux_err = GBP_flux * 3.009167E-22, GBP_flux_err * 3.009167E-22
-    GRP_flux, GRP_flux_err = GRP_flux * 1.638483E-22, GRP_flux_err * 1.638483E-22
-
-    flux_values = np.array([G_flux,GBP_flux,GRP_flux, W1_flux,W2_flux,J_flux,H_flux,K_flux]) * u.watt / u.um / u.cm**2
+    flux_values = np.array([G_flux.value,GBP_flux.value,GRP_flux.value, W1_flux,W2_flux,J_flux,H_flux,K_flux]) * u.watt / u.um / u.cm**2
     flux_values_Jy = flux_values.to(u.Jy, equivalencies=u.spectral_density(filter_wavelen))
-
-    #flux_err = np.array([G_flux_err,GBP_flux_err,GRP_flux_err,W1_flux_err,W2_flux_err,J_flux_err,H_flux_err,K_flux_err])
 
     return filter_wavelen, flux_values_Jy
 
 # %% 
-wavelen, flux_values= get_flux_values('2135550755683407232')
-flux_cgs = flux_unit_change(flux_values, 'cgs')
-flux_Jy = flux_values
-flux_SI = flux_unit_change(flux_values, 'SI')
+#wavelen, flux_values= get_flux_values('2135550755683407232')
+#flux_cgs = flux_unit_change(flux_values, 'cgs')
+#flux_Jy = flux_values
+#flux_SI = flux_unit_change(flux_values, 'SI')
 
-plt.plot(wavelen, flux_SI,'o')
-plt.xlabel('Wavelenght (μm)')
-plt.ylabel('Flux (W / cm-2 μm-1)')
-plt.title('Flux values of the star for each filter')
+#plt.plot(wavelen, flux_SI,'o')
+#plt.xlabel('Wavelenght (μm)')
+#plt.ylabel('Flux (W / m-2 μm-1)')
+#plt.title('Flux values of the star for each filter')
