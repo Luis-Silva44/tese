@@ -30,7 +30,7 @@ def vizier_coords(gaia_id):
     Vizier.ROW_LIMIT = 1  
     gaia_catalog = "I/355/gaiadr3"  # Gaia DR3 catalog
 
-    gaia_values = Vizier.query_constraints(catalog=gaia_catalog, Source=gaia_id)
+    gaia_values = Vizier.query_constraints(catalog=gaia_catalog, Source=str(gaia_id))
     
     if gaia_values:
         ra, dec = gaia_values[0]['RA_ICRS'][0], gaia_values[0]['DE_ICRS'][0]
@@ -41,7 +41,7 @@ def vizier_coords(gaia_id):
 #%% 
 def wise_values(gaia_id):
     wise_catalog = 'II/311/wise'
-    ra, dec = vizier_coords(gaia_id)
+    ra, dec = vizier_coords(str(gaia_id))
     wise_values = Vizier.query_region(f"{ra} {dec}", radius=10* u.arcsec , catalog=wise_catalog)
     if wise_values:
         return wise_values
@@ -50,7 +50,7 @@ def wise_values(gaia_id):
 
 def two_mass_values(gaia_id):
     two_mass_catalog = 'II/246/out'
-    ra, dec = vizier_coords(gaia_id)
+    ra, dec = vizier_coords(str(gaia_id))
 
     two_mass_values = Vizier.query_region(f"{ra} {dec}", radius=10*u.arcsec, catalog=two_mass_catalog)
     
@@ -61,7 +61,7 @@ def two_mass_values(gaia_id):
 
 def gaia_values(gaia_id):
     gaia_catalog = "I/355/gaiadr3"  # Gaia DR3 catalog
-    gaia_values = Vizier.query_constraints(catalog=gaia_catalog, Source=gaia_id)
+    gaia_values = Vizier.query_constraints(catalog=gaia_catalog, Source=str(gaia_id))
 
     return gaia_values
 
@@ -121,7 +121,7 @@ def get_flux_values(gaia_id):
     return filter_wavelen, flux_values_Jy
 
 # %% 
-#wavelen, flux_values= get_flux_values('2135550755683407232')
+#wavelen, flux_values= get_flux_values(2135550755683407232)
 #flux_cgs = flux_unit_change(flux_values, 'cgs')
 #flux_Jy = flux_values
 #flux_SI = flux_unit_change(flux_values, 'SI')
@@ -130,3 +130,6 @@ def get_flux_values(gaia_id):
 #plt.xlabel('Wavelenght (μm)')
 #plt.ylabel('Flux (W / m-2 μm-1)')
 #plt.title('Flux values of the star for each filter')
+
+
+#get_flux_values(2135550755683407232)
