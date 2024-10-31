@@ -54,15 +54,20 @@ def create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, unit):
     print(flux_table)
     print('---')
     mean_stellar_radius = np.mean(stellar_radius)
-    print(mean_stellar_radius)
-    
-# %% 
 
-gaia_id = 1609157502297291008
-Teff = 5873
-mettalicity = 0.22
-log_g = 4.200
-parallax = 16.63 * u.arcmin
+    return mean_stellar_radius
+# %% 
+R_Sun = 6.957e8 * u.m
+gaia_id = 2102810838463021568
+Teff = 6276
+mettalicity = -0.10
+log_g = 4.502
+parallax = 0.73 * u.arcmin
+SWEET_CAT_value = 1.010 * R_Sun
+SWEET_CAT_value = SWEET_CAT_value.to(R_Sun)
 
 #SED_plot(gaia_id, Teff, mettalicity, log_g,'cgs')
-create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, 'SI')
+stellar_rad = create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, 'SI')
+
+error = abs(stellar_rad - SWEET_CAT_value) / SWEET_CAT_value.value * 100
+print('Mean value:', stellar_rad.value, 'Error:', error.value)
