@@ -58,7 +58,7 @@ def create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, unit):
     
 # %% 
 
-gaia_id = '1609157502297291008'
+gaia_id = 1609157502297291008
 Teff = 5873
 mettalicity = 0.22
 log_g = 4.200
