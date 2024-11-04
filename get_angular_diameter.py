@@ -30,16 +30,15 @@ def get_angular_diameter(gaia_id, Teff, mettalicity, log_g):
     return wavelen, obs_flux_values_Jy, model_flux_values_Jy, angular_diameter_arcsec
 
 # %% 
-def create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, unit):
+def create_dataframe(gaia_id, Teff, mettalicity, log_g, distance, unit):
     wavelen, obs_flux_values_Jy, model_flux_values_Jy, ang_diam = get_angular_diameter(gaia_id, Teff, mettalicity, log_g)
-    parallax = parallax.to(u.arcsec)
-    distance =  1 / parallax * u.parsec
-
+    R_Sun = 6.957e8 * u.m
+    distance = distance.to(R_Sun)
+    ang_diam = ang_diam.to(u.rad)
     obs_flux_values = flux_unit_change(obs_flux_values_Jy, unit)
     model_flux_values = flux_unit_change(model_flux_values_Jy, unit)
-    stellar_radius = distance * ang_diam / 2
-    R_Sun = 6.957e8 * u.m
-    stellar_radius = stellar_radius.to(R_Sun)
+
+    stellar_radius = distance.to(R_Sun) * ang_diam.value / 2 #THIS IS SINE OF A VERY SMALL ANGLE
 
     flux_table = pd.DataFrame({
     'Filter Wavelength': wavelen,
@@ -63,15 +62,13 @@ def create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, unit):
     return mean_stellar_radius
 # %% 
 R_Sun = 6.957e8 * u.m
-gaia_id = 1019003226022657920
-Teff = 5581 
-mettalicity = 0.33 
-log_g = 4.33 
-parallax = 15.14 * u.arcmin
-SWEET_CAT_value = 1.070 * R_Sun
-SWEET_CAT_value = SWEET_CAT_value.to(R_Sun)
+gaia_id = 1019003226022657920	
+Teff = 5581
+mettalicity = 0.33
+log_g = 4.33
+distance = 66.0 * u.pc
 
-SED_plot(gaia_id, Teff, mettalicity, log_g,'cgs')
-stellar_rad = create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, 'cgs')
+#SED_plot(gaia_id, Teff, mettalicity, log_g,'SI')
+stellar_rad = create_dataframe(gaia_id, Teff, mettalicity, log_g, distance, 'Jy')
 
-print('Mean value:', stellar_rad.value)
+print('Mean value:', stellar_rad)
