@@ -2,7 +2,7 @@
 from get_flux_values import * 
 from SED_fitting import * 
 import pandas as pd
-
+import uncertainties.umath as umath
 
 # %% 
 def find_nearest_index(array, value):
@@ -18,10 +18,15 @@ def get_angular_diameter(gaia_id, Teff, mettalicity, log_g):
         nearest_index.append(find_nearest_index(SED_wavelen, wavelen[i]))
 
     model_flux_values_Jy = np.array([SED_fluxes_Jy[i].value for i in nearest_index]) * u.Jy
-    
-    angular_diameter = 2 * np.sqrt(obs_flux_values_Jy / model_flux_values_Jy) * u.rad
-    angular_diameter_arcsec = angular_diameter.to(u.arcsec)
 
+    angular_diameter = []
+    for i in range(len(obs_flux_values_Jy)):
+        ang_diam = 2 * umath.sqrt(obs_flux_values_Jy[i].value / model_flux_values_Jy[i].value)
+        angular_diameter.append(ang_diam)
+
+    unit = 1 * u.rad
+    angular_diameter = angular_diameter * unit
+    angular_diameter_arcsec = angular_diameter.to(u.arcsec)
     return wavelen, obs_flux_values_Jy, model_flux_values_Jy, angular_diameter_arcsec
 
 # %% 
@@ -58,16 +63,15 @@ def create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, unit):
     return mean_stellar_radius
 # %% 
 R_Sun = 6.957e8 * u.m
-gaia_id = 2102810838463021568
-Teff = 6276
-mettalicity = -0.10
-log_g = 4.502
-parallax = 0.73 * u.arcmin
-SWEET_CAT_value = 1.010 * R_Sun
+gaia_id = 1019003226022657920
+Teff = 5581 
+mettalicity = 0.33 
+log_g = 4.33 
+parallax = 15.14 * u.arcmin
+SWEET_CAT_value = 1.070 * R_Sun
 SWEET_CAT_value = SWEET_CAT_value.to(R_Sun)
 
-#SED_plot(gaia_id, Teff, mettalicity, log_g,'cgs')
-stellar_rad = create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, 'SI')
+SED_plot(gaia_id, Teff, mettalicity, log_g,'cgs')
+stellar_rad = create_dataframe(gaia_id, Teff, mettalicity, log_g, parallax, 'cgs')
 
-error = abs(stellar_rad - SWEET_CAT_value) / SWEET_CAT_value.value * 100
-print('Mean value:', stellar_rad.value, 'Error:', error.value)
+print('Mean value:', stellar_rad.value)
