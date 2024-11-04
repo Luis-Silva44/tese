@@ -91,29 +91,25 @@ def get_flux_values(gaia_id):
     wise_data = wise_values(gaia_id)
     two_mass_data = two_mass_values(gaia_id)
     gaia_data = gaia_values(gaia_id)
-<<<<<<< HEAD
+
     W1_mag, W1_mag_err = float(wise_data[0]['W1mag']), float(wise_data[0]['e_W1mag'])
     W2_mag, W2_mag_err = float(wise_data[0]['W2mag']), float(wise_data[0]['e_W2mag'])
     print(W1_mag, W1_mag_err)
     J_mag, J_mag_err = float(two_mass_data[0]['Jmag']), float(two_mass_data[0]['e_Jmag'])
     H_mag, H_mag_err = float(two_mass_data[0]['Hmag']), float(two_mass_data[0]['e_Hmag'])
     K_mag, K_mag_err = float(two_mass_data[0]['Kmag']), float(two_mass_data[0]['e_Kmag'])
-=======
 
-<<<<<<< HEAD
     W1_mag = float(wise_data[0]['W1mag'])
     W2_mag = float(wise_data[0]['W2mag'])
     J_mag = float(two_mass_data[0]['Jmag'])
     H_mag = float(two_mass_data[0]['Hmag'])
     K_mag = float(two_mass_data[0]['Kmag'])
->>>>>>> update
-=======
+
     W1_mag = ufloat(wise_data[0]['W1mag'], wise_data[0]['e_W1mag'])
     W2_mag = ufloat(wise_data[0]['W2mag'], wise_data[0]['e_W2mag'])
     J_mag = ufloat(two_mass_data[0]['Jmag'], two_mass_data[0]['e_Jmag'])
     H_mag = ufloat(two_mass_data[0]['Hmag'], two_mass_data[0]['e_Hmag'])
     K_mag = ufloat(two_mass_data[0]['Kmag'], two_mass_data[0]['e_Kmag'])
->>>>>>> update
 
     W1_flux = mag_to_flux(W1_mag,'W1')
     W2_flux= mag_to_flux(W2_mag,'W2')
@@ -141,29 +137,5 @@ def get_flux_values(gaia_id):
     return filter_wavelen, flux_values_Jy
 
 # %% 
-#wavelen, flux_values= get_flux_values(2135550755683407232)
-#flux_cgs = flux_unit_change(flux_values, 'cgs')
-#flux_Jy = flux_values
-#flux_SI = flux_unit_change(flux_values, 'SI')
 
-<<<<<<< HEAD
-plt.plot(wavelen, flux_values,'o')
-plt.xlabel('Wavelenght (μm)')
-plt.ylabel('Flux (W / cm-2 μm-1)')
-plt.title('Flux values of the star for each filter')
-#plt.errorbar(wavelen, flux_values, yerr=flux_error)
-
-print(flux_values)
-print(flux_error)
-=======
-#plt.plot(wavelen, flux_SI,'o')
-#plt.xlabel('Wavelenght (μm)')
-#plt.ylabel('Flux (W / m-2 μm-1)')
-#plt.title('Flux values of the star for each filter')
-
-
-#get_flux_values(2135550755683407232)
-<<<<<<< HEAD
->>>>>>> update
-=======
->>>>>>> update
+get_flux_values(2135550755683407232)
