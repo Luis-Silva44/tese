@@ -2,6 +2,7 @@
 import astropy.units as u
 from astroquery.vizier import Vizier
 import numpy as np
+from uncertainties import ufloat, nominal_value
  
 
 #STILL NEEDED: CORRECT UNCERTAINTIES; REMOVE WARNING FROM COORDINATES
@@ -81,9 +82,9 @@ def mag_to_flux(mag,band): # in W cm-2 micrometer-1
 #%%
 def get_flux_values(gaia_id):
 
-    filter_bands = {'G': 0.673,'GBP':0.532, 'GRP':0.797, 
-                    'W1':3.4, 'W2':4.6, 
-                    'J':1.25, 'H':1.65, 'K':2.15,}
+    filter_bands = {'GBP':0.532, 'G': 0.673, 'GRP':0.797, 
+                    'J':1.25, 'H':1.65, 'K':2.15,
+                    'W1':3.4, 'W2':4.6}
 
     filter_wavelen = np.array([d for d in filter_bands.values()]) * u.um
 
@@ -99,11 +100,19 @@ def get_flux_values(gaia_id):
     K_mag, K_mag_err = float(two_mass_data[0]['Kmag']), float(two_mass_data[0]['e_Kmag'])
 =======
 
+<<<<<<< HEAD
     W1_mag = float(wise_data[0]['W1mag'])
     W2_mag = float(wise_data[0]['W2mag'])
     J_mag = float(two_mass_data[0]['Jmag'])
     H_mag = float(two_mass_data[0]['Hmag'])
     K_mag = float(two_mass_data[0]['Kmag'])
+>>>>>>> update
+=======
+    W1_mag = ufloat(wise_data[0]['W1mag'], wise_data[0]['e_W1mag'])
+    W2_mag = ufloat(wise_data[0]['W2mag'], wise_data[0]['e_W2mag'])
+    J_mag = ufloat(two_mass_data[0]['Jmag'], two_mass_data[0]['e_Jmag'])
+    H_mag = ufloat(two_mass_data[0]['Hmag'], two_mass_data[0]['e_Hmag'])
+    K_mag = ufloat(two_mass_data[0]['Kmag'], two_mass_data[0]['e_Kmag'])
 >>>>>>> update
 
     W1_flux = mag_to_flux(W1_mag,'W1')
@@ -112,19 +121,21 @@ def get_flux_values(gaia_id):
     H_flux = mag_to_flux(H_mag,'H')
     K_flux = mag_to_flux(K_mag,'K')
 
-    G_flux = float(gaia_data[0]['FG'])
-    GBP_flux = float(gaia_data[0]['FBP'])
-    GRP_flux = float(gaia_data[0]['FRP'])
-    
-    G_flux = G_flux * 1.346109e-21 * u.watt / u.m**2 / u.nm
-    GBP_flux = GBP_flux * 3.009167E-21 * u.watt / u.m**2 / u.nm
-    GRP_flux = GRP_flux * 1.638483E-21 * u.watt / u.m**2 / u.nm
+    G_flux = ufloat(gaia_data[0]['FG'], gaia_data[0]['e_FG'])
+    GBP_flux = ufloat(gaia_data[0]['FBP'], gaia_data[0]['e_FBP'])
+    GRP_flux = ufloat(gaia_data[0]['FRP'], gaia_data[0]['e_FRP'])
+
+    unit = 1 * u.watt / u.m**2 / u.nm
+    G_flux = G_flux * 1.346109e-21 * unit
+    GBP_flux = GBP_flux * 3.009167E-21 * unit
+    GRP_flux = GRP_flux * 1.638483E-21 * unit
 
     G_flux = G_flux.to(u.watt / u.um / u.cm**2)
     GBP_flux = GBP_flux.to(u.watt / u.um / u.cm**2)
     GRP_flux = GRP_flux.to(u.watt / u.um / u.cm**2)
 
-    flux_values = np.array([G_flux.value,GBP_flux.value,GRP_flux.value, W1_flux,W2_flux,J_flux,H_flux,K_flux]) * u.watt / u.um / u.cm**2
+    unit = 1 * u.watt / u.um / u.cm**2
+    flux_values = np.array([GBP_flux.value, G_flux.value,GRP_flux.value, J_flux,H_flux,K_flux,W1_flux,W2_flux]) * unit
     flux_values_Jy = flux_values.to(u.Jy, equivalencies=u.spectral_density(filter_wavelen))
 
     return filter_wavelen, flux_values_Jy
@@ -152,4 +163,7 @@ print(flux_error)
 
 
 #get_flux_values(2135550755683407232)
+<<<<<<< HEAD
+>>>>>>> update
+=======
 >>>>>>> update
