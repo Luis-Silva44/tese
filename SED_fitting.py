@@ -5,7 +5,7 @@ import pysynphot as S
 import numpy as np
 import matplotlib.pyplot as plt
 import astropy.units as u
-
+from uncertainties import ufloat
 # %% 
 first_temp_steps = list(range(3000,13001,250))
 second_temp_steps = list(range(13000, 50001, 1000)) 
@@ -85,8 +85,13 @@ def SED_plot(gaia_id, Teff, mettalicity, log_g, unit):
 
     band_wavelen, flux_values_Jy = get_flux_values(gaia_id)
     flux_values = flux_unit_change(flux_values_Jy, unit)
+    flux_val = []
+    flux_unc = []
+    for i in range(len(band_wavelen)):
+        flux_val.append(flux_values[i].value.nominal_value)
+        flux_unc.append(flux_values[i].value.std_dev)
 
-    plt.plot(band_wavelen, flux_values, 'o')
+    plt.errorbar(band_wavelen, flux_val, yerr=flux_unc, fmt='o',ecolor='orange')
     plt.xlim(0,5)
     plt.xlabel('Wavelength (μm)')
     plt.ylabel('Flux (unit)')
