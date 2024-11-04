@@ -3,6 +3,7 @@ import astropy.units as u
 from astroquery.vizier import Vizier
 import numpy as np
 from uncertainties import ufloat, nominal_value
+import matplotlib.pyplot as plt
  
 
 #STILL NEEDED: CORRECT UNCERTAINTIES; REMOVE WARNING FROM COORDINATES
@@ -77,7 +78,7 @@ def mag_to_flux(mag,band): # in W cm-2 micrometer-1
 
     if flux_constant is None:
         raise ValueError(f'No zero point flux value found for {band} band')
-    return flux_constant * 10**(-mag/0.4)
+    return flux_constant * 10**(-mag * 0.4)
 
 #%%
 def get_flux_values(gaia_id):
@@ -92,35 +93,23 @@ def get_flux_values(gaia_id):
     two_mass_data = two_mass_values(gaia_id)
     gaia_data = gaia_values(gaia_id)
 
-    W1_mag, W1_mag_err = float(wise_data[0]['W1mag']), float(wise_data[0]['e_W1mag'])
-    W2_mag, W2_mag_err = float(wise_data[0]['W2mag']), float(wise_data[0]['e_W2mag'])
-    print(W1_mag, W1_mag_err)
-    J_mag, J_mag_err = float(two_mass_data[0]['Jmag']), float(two_mass_data[0]['e_Jmag'])
-    H_mag, H_mag_err = float(two_mass_data[0]['Hmag']), float(two_mass_data[0]['e_Hmag'])
-    K_mag, K_mag_err = float(two_mass_data[0]['Kmag']), float(two_mass_data[0]['e_Kmag'])
-
-    W1_mag = float(wise_data[0]['W1mag'])
-    W2_mag = float(wise_data[0]['W2mag'])
-    J_mag = float(two_mass_data[0]['Jmag'])
-    H_mag = float(two_mass_data[0]['Hmag'])
-    K_mag = float(two_mass_data[0]['Kmag'])
-
     W1_mag = ufloat(wise_data[0]['W1mag'], wise_data[0]['e_W1mag'])
     W2_mag = ufloat(wise_data[0]['W2mag'], wise_data[0]['e_W2mag'])
     J_mag = ufloat(two_mass_data[0]['Jmag'], two_mass_data[0]['e_Jmag'])
     H_mag = ufloat(two_mass_data[0]['Hmag'], two_mass_data[0]['e_Hmag'])
     K_mag = ufloat(two_mass_data[0]['Kmag'], two_mass_data[0]['e_Kmag'])
 
+    
     W1_flux = mag_to_flux(W1_mag,'W1')
     W2_flux= mag_to_flux(W2_mag,'W2')
     J_flux = mag_to_flux(J_mag,'J')
     H_flux = mag_to_flux(H_mag,'H')
     K_flux = mag_to_flux(K_mag,'K')
-
+  
     G_flux = ufloat(gaia_data[0]['FG'], gaia_data[0]['e_FG'])
     GBP_flux = ufloat(gaia_data[0]['FBP'], gaia_data[0]['e_FBP'])
     GRP_flux = ufloat(gaia_data[0]['FRP'], gaia_data[0]['e_FRP'])
-
+    
     unit = 1 * u.watt / u.m**2 / u.nm
     G_flux = G_flux * 1.346109e-21 * unit
     GBP_flux = GBP_flux * 3.009167E-21 * unit
@@ -131,11 +120,10 @@ def get_flux_values(gaia_id):
     GRP_flux = GRP_flux.to(u.watt / u.um / u.cm**2)
 
     unit = 1 * u.watt / u.um / u.cm**2
-    flux_values = np.array([GBP_flux.value, G_flux.value,GRP_flux.value, J_flux,H_flux,K_flux,W1_flux,W2_flux]) * unit
+    flux_values = np.array([GBP_flux.value, G_flux.value, GRP_flux.value, J_flux,H_flux,K_flux,W1_flux,W2_flux]) * unit
     flux_values_Jy = flux_values.to(u.Jy, equivalencies=u.spectral_density(filter_wavelen))
 
     return filter_wavelen, flux_values_Jy
 
 # %% 
-
 get_flux_values(2135550755683407232)
