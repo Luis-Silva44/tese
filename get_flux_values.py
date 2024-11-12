@@ -126,4 +126,4 @@ def get_flux_values(gaia_id):
     return filter_wavelen, flux_values_Jy
 
 # %% 
-get_flux_values(2135550755683407232)
+#get_flux_values(1920113512486282240)
