@@ -105,4 +105,4 @@ Teff = 5785
 mettalicity = 0.09
 log_g = 4.37
 
-SED_plot(gaia_id, Teff, mettalicity, log_g,'SI')
+#SED_plot(gaia_id, Teff, mettalicity, log_g,'SI')
