@@ -4,9 +4,10 @@ from astroquery.vizier import Vizier
 import numpy as np
 from uncertainties import ufloat, nominal_value
 import matplotlib.pyplot as plt
+from dust_extinction.parameter_averages import G23
  
 
-#STILL NEEDED: CORRECT UNCERTAINTIES; REMOVE WARNING FROM COORDINATES
+#STILL NEEDED: REMOVE WARNING FROM COORDINATES
 # %% 
 
 def flux_unit_change(value,unit):
@@ -64,7 +65,6 @@ def two_mass_values(gaia_id):
 def gaia_values(gaia_id):
     gaia_catalog = "I/355/gaiadr3"  # Gaia DR3 catalog
     gaia_values = Vizier.query_constraints(catalog=gaia_catalog, Source=str(gaia_id))
-
     return gaia_values
 
 def mag_to_flux(mag,band): # in W cm-2 micrometer-1
@@ -80,6 +80,12 @@ def mag_to_flux(mag,band): # in W cm-2 micrometer-1
         raise ValueError(f'No zero point flux value found for {band} band')
     return flux_constant * 10**(-mag * 0.4)
 
+def extinction(flux_values, wavelen, color_excess):
+    model = G23(Rv=3.1)
+    extinction = model.extinguish(wavelen, color_excess)
+    flux_values = flux_values / extinction
+    return flux_values
+
 #%%
 def get_flux_values(gaia_id):
 
@@ -93,13 +99,14 @@ def get_flux_values(gaia_id):
     two_mass_data = two_mass_values(gaia_id)
     gaia_data = gaia_values(gaia_id)
 
+    color_excess = float(gaia_data[0]['BPmag']) - float(gaia_data[0]['Gmag'])
+    
     W1_mag = ufloat(wise_data[0]['W1mag'], wise_data[0]['e_W1mag'])
     W2_mag = ufloat(wise_data[0]['W2mag'], wise_data[0]['e_W2mag'])
     J_mag = ufloat(two_mass_data[0]['Jmag'], two_mass_data[0]['e_Jmag'])
     H_mag = ufloat(two_mass_data[0]['Hmag'], two_mass_data[0]['e_Hmag'])
     K_mag = ufloat(two_mass_data[0]['Kmag'], two_mass_data[0]['e_Kmag'])
 
-    
     W1_flux = mag_to_flux(W1_mag,'W1')
     W2_flux= mag_to_flux(W2_mag,'W2')
     J_flux = mag_to_flux(J_mag,'J')
@@ -123,7 +130,10 @@ def get_flux_values(gaia_id):
     flux_values = np.array([GBP_flux.value, G_flux.value, GRP_flux.value, J_flux,H_flux,K_flux,W1_flux,W2_flux]) * unit
     flux_values_Jy = flux_values.to(u.Jy, equivalencies=u.spectral_density(filter_wavelen))
 
+    flux_values_Jy = extinction(flux_values_Jy, filter_wavelen, color_excess)
+
     return filter_wavelen, flux_values_Jy
 
 # %% 
-#get_flux_values(1920113512486282240)
+wavelen, flux = get_flux_values(1019003226022657920)
+#flux
