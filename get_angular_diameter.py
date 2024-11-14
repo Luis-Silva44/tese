@@ -67,8 +67,30 @@ Teff = 5581
 mettalicity = 0.33 
 log_g = 4.33 
 distance = 66.0 * u.pc
+SWEET_cat_value = 1.070  * R_Sun
+SWEET_cat_value = SWEET_cat_value.to(R_Sun)
 
 SED_plot(gaia_id, Teff, mettalicity, log_g,'SI')
 stellar_rad = create_dataframe(gaia_id, Teff, mettalicity, log_g, distance, 'Jy')
 
 print('Mean value:', stellar_rad)
+print('SWEET-cat value:', SWEET_cat_value)
+print('Erro relativamente ao tabelado:', abs(SWEET_cat_value - stellar_rad) / SWEET_cat_value * 100,'%')
+
+# %% 
+# %% 
+R_Sun = 6.957e8 * u.m
+gaia_id = 777254360337133312   
+Teff = 5924     
+mettalicity = 0.06 
+log_g = 4.308 
+distance = 13.9 * u.pc
+SWEET_cat_value = 1.156 * R_Sun
+SWEET_cat_value = SWEET_cat_value.to(R_Sun)
+
+SED_plot(gaia_id, Teff, mettalicity, log_g,'SI')
+stellar_rad = create_dataframe(gaia_id, Teff, mettalicity, log_g, distance, 'Jy')
+
+print('Mean value:', stellar_rad)
+print('SWEET-cat value:', SWEET_cat_value)
+print('Erro relativamente ao tabelado:', abs(SWEET_cat_value - stellar_rad) / SWEET_cat_value * 100,'%')
