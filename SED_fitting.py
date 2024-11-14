@@ -100,9 +100,9 @@ def SED_plot(gaia_id, Teff, mettalicity, log_g, unit):
     plt.show()
 
 # %% 
-gaia_id = 2135550755683407232
-Teff = 5785
-mettalicity = 0.09
-log_g = 4.37
+gaia_id = 1019003226022657920
+Teff = 5581 
+mettalicity = 0.33
+log_g = 4.33
 
 #SED_plot(gaia_id, Teff, mettalicity, log_g,'SI')
