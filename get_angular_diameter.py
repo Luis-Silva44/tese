@@ -62,13 +62,13 @@ def create_dataframe(gaia_id, Teff, mettalicity, log_g, distance, unit):
     return mean_stellar_radius
 # %% 
 R_Sun = 6.957e8 * u.m
-gaia_id = 3895948101012579456
-Teff = 4781    
-mettalicity = 0.08
-log_g = 2.81
-distance = 213.2 * u.pc
+gaia_id = 1019003226022657920
+Teff = 5581   
+mettalicity = 0.33 
+log_g = 4.33 
+distance = 66.0 * u.pc
 
-#SED_plot(gaia_id, Teff, mettalicity, log_g,'SI')
+SED_plot(gaia_id, Teff, mettalicity, log_g,'SI')
 stellar_rad = create_dataframe(gaia_id, Teff, mettalicity, log_g, distance, 'Jy')
 
 print('Mean value:', stellar_rad)
