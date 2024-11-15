@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import astropy.units as u
 from uncertainties import ufloat
+from flux_extinction import flux_extinction
 
 # %% 
 def create_SEDs(Teff_vals, mettalicity_vals, logg_vals):
@@ -70,6 +71,12 @@ def SED_interpolator(Teff,mettalicity,logg):
     model_flux_Jy = interpolated_fluxes.to(u.Jy, u.spectral_density(SED_wavelen))
 
     return SED_wavelen, model_flux_Jy
+
+def SED_attenuated(Teff, mettalicity, logg, gaia_id):
+    SED_wavelen, SED_flux = SED_interpolator(Teff,mettalicity,logg)
+    SED_attenuated = flux_extinction(SED_wavelen, SED_flux, Teff, mettalicity, gaia_id)
+    return SED_wavelen, SED_attenuated
+
 # %% 
 def SED_plot(gaia_id, Teff, mettalicity, log_g, unit):
     SED_wavelen, model_flux_Jy= SED_interpolator(Teff,mettalicity,log_g)
@@ -104,5 +111,7 @@ gaia_id = 1019003226022657920
 Teff = 5581 
 mettalicity = 0.33
 log_g = 4.33
-
+#
 #SED_plot(gaia_id, Teff, mettalicity, log_g,'SI')
+#SED_interpolator(Teff,mettalicity,log_g)
+#SED_attenuated(Teff, mettalicity, log_g, gaia_id)
