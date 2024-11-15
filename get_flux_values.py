@@ -5,6 +5,7 @@ import numpy as np
 from uncertainties import ufloat, nominal_value
 import matplotlib.pyplot as plt
 from dust_extinction.parameter_averages import G23
+from extinction import ccm89, apply
  
 
 #STILL NEEDED: REMOVE WARNING FROM COORDINATES
@@ -80,12 +81,6 @@ def mag_to_flux(mag,band): # in W cm-2 micrometer-1
         raise ValueError(f'No zero point flux value found for {band} band')
     return flux_constant * 10**(-mag * 0.4)
 
-def extinction(flux_values, wavelen, color_excess):
-    model = G23(Rv=3.1)
-    extinction = model.extinguish(wavelen, color_excess)
-    flux_values = flux_values / extinction
-    return flux_values
-
 #%%
 def get_flux_values(gaia_id):
 
@@ -98,8 +93,6 @@ def get_flux_values(gaia_id):
     wise_data = wise_values(gaia_id)
     two_mass_data = two_mass_values(gaia_id)
     gaia_data = gaia_values(gaia_id)
-
-    color_excess = float(gaia_data[0]['BPmag']) - float(gaia_data[0]['Gmag'])
     
     W1_mag = ufloat(wise_data[0]['W1mag'], wise_data[0]['e_W1mag'])
     W2_mag = ufloat(wise_data[0]['W2mag'], wise_data[0]['e_W2mag'])
@@ -130,10 +123,8 @@ def get_flux_values(gaia_id):
     flux_values = np.array([GBP_flux.value, G_flux.value, GRP_flux.value, J_flux,H_flux,K_flux,W1_flux,W2_flux]) * unit
     flux_values_Jy = flux_values.to(u.Jy, equivalencies=u.spectral_density(filter_wavelen))
 
-    flux_values_Jy = extinction(flux_values_Jy, filter_wavelen, color_excess)
-
     return filter_wavelen, flux_values_Jy
 
 # %% 
 wavelen, flux = get_flux_values(1019003226022657920)
-#flux
+flux
